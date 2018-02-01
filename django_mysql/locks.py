@@ -99,9 +99,10 @@ class Lock(object):
 
 
 class TableLock(object):
-    def __init__(self, read=None, write=None, using=None):
+    def __init__(self, read=None, write=None, write_concurrent=None, using=None):
         self.read = self._process_names(read)
         self.write = self._process_names(write)
+        self.write_concurrent = self._process_names(write_concurrent)
         self.db = DEFAULT_DB_ALIAS if using is None else using
 
     def _process_names(self, names):
@@ -152,6 +153,8 @@ class TableLock(object):
                 locks.append("{} READ".format(qn(name)))
             for name in self.write:
                 locks.append("{} WRITE".format(qn(name)))
+            for name in self.write_concurrent:
+                locks.append("{} WRITE CONCURRENT".format(qn(name)))
             cursor.execute("LOCK TABLES {}".format(", ".join(locks)))
 
     def release(self, exc_type=None, exc_value=None, traceback=None):
